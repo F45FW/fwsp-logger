@@ -1,0 +1,34 @@
+{
+  "name": "fwsp-logger",
+  "version": "0.0.1",
+  "author": {
+    "name": "Eric Adum",
+    "email": "eric@flywheelsports.com"
+  },
+  "description": "Provides logging via pino, and transport to elasticsearch",
+  "keywords": [
+    "logging"
+  ],
+  "main": "index.js",
+  "analyze": false,
+  "engines": {
+    "node": ">=6.2.1"
+  },
+  "scripts": {
+    "test": "mocha specs --reporter spec"
+  },
+  "license": "MIT",
+  "repository": "flywheelsports/fwsp-logger",
+  "dependencies": {
+    "pino": "^3.0.1"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "eslint": "^3.10.2",
+    "mocha": "^3.1.2"
+  },
+  "bin": {
+    "fwsp-logger": "index.js"
+  },
+  "homepage": "https://github.com/flywheelsports/fwsp-logger/#readme"
+}
