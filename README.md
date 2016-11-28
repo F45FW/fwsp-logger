@@ -7,23 +7,19 @@ that ships its logs to Elasticsearch via [pino-elasticsearch](https://github.com
 
 First, run `npm install -g pino-elasticsearch`
 
-In Hydra Express service entry-point script:
+In [Hydra-Express](https://github.com/flywheelsports/fwsp-hydra-express) service entry-point script:
 ```javascript
 if (config.logger) {
-  const Logger = require('fwsp-logger'),
-        logger = new Logger({
-          name: config.logger.name || config.hydra.serviceName
-        },
-        config.logger.elasticsearch
-      );
-  hydraExpress.logger = logger;
-  hydraExpress.appLogger = logger.getLogger();
+  require('fwsp-logger').initHydraExpress(
+    hydraExpress, config.hydra.serviceName, config.logger
+  );
 }
 ```
 with corresponding entry in config.json:
-
 ```json
 "logger": {
+  "name": "optional - will default to service name",
+  "logPath": "optional - will default to service/servicename.log",
   "elasticsearch": {
     "host": "localhost",
     "port": 9200

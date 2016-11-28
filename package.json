@@ -1,6 +1,6 @@
 {
   "name": "fwsp-logger",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": {
     "name": "Eric Adum",
     "email": "eric@flywheelsports.com"
@@ -20,6 +20,7 @@
   "license": "MIT",
   "repository": "flywheelsports/fwsp-logger",
   "dependencies": {
+    "chokidar": "^1.6.1",
     "pino": "^3.0.1"
   },
   "devDependencies": {
