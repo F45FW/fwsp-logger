@@ -9,11 +9,17 @@ First, run `npm install -g pino-elasticsearch`
 
 In [Hydra-Express](https://github.com/flywheelsports/fwsp-hydra-express) service entry-point script:
 ```javascript
-if (config.logger) {
-  require('fwsp-logger').initHydraExpress(
-    hydraExpress, config.hydra.serviceName, config.logger
-  );
-}
+let logger = config.logger && require('fwsp-logger').initHydraExpress(
+  hydraExpress, config.hydra.serviceName, config.logger
+);
+return hydraExpress.init(config.getObject(), version, () => {
+  const express = hydraExpress.getExpress();
+  let logRequests = config.environment === 'development' && config.logRequestHeader;
+  logger && logRequests && hydraExpress.getExpressApp().use(logger.middleware);
+  hydraExpress.registerRoutes({
+    '/v1/service': require('./routes/service-v1-routes')
+  });
+})
 ```
 with corresponding entry in config.json:
 ```json
@@ -29,7 +35,7 @@ with corresponding entry in config.json:
 
 General usage:
 ```javascript
-const Logger = require('fwsp-logger'),
+const Logger = require('fwsp-logger').Logger,
       logger = new Logger(
         { name: 'myApp' },
         { host: 'your.elasticsearch.host.com', port: 9200 }
