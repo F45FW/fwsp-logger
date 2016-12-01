@@ -74,8 +74,8 @@ class Logger {
       },
       res: (res) => {
         return {
-          statusCode: res.statusCode,
-          header: res._header
+          statusCode: res.statusCode
+          //,header: res._header
         };
       }
     };

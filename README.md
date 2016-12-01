@@ -14,7 +14,7 @@ let logger = config.logger && require('fwsp-logger').initHydraExpress(
 );
 return hydraExpress.init(config.getObject(), version, () => {
   const express = hydraExpress.getExpress();
-  let logRequests = config.environment === 'development' && config.logRequestHeader;
+  let logRequests = config.environment === 'development' && config.logger.logRequests;
   logger && logRequests && hydraExpress.getExpressApp().use(logger.middleware);
   hydraExpress.registerRoutes({
     '/v1/service': require('./routes/service-v1-routes')
@@ -26,6 +26,10 @@ with corresponding entry in config.json:
 "logger": {
   "name": "optional - will default to service name",
   "logPath": "optional - will default to service/servicename.log",
+  "toConsole": false, // don't log to console
+  "noFile": true, // don't log to disk
+  "logRequests": true, // log all requests in development env
+  "redact": ["password"], // fields to redact when logging req.body
   "elasticsearch": {
     "host": "localhost",
     "port": 9200
