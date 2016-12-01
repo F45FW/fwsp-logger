@@ -17,10 +17,10 @@ class Logger {
    * @param {object} es - elasticsearch connection info
    * @param {string} es.host - elasticsearch host
    * @param {number} es.port - elasticsearch port
+   * @param {number} [es.index=pino] - elasticsearch index
    */
   constructor(opts, es) {
     this.pt = new PassThrough();
-    const pretty = pino.pretty();
     this.initTransport(es);
     this.pt.pipe(this.esTransport.stdin);
     let pinoOpts = {
@@ -30,6 +30,7 @@ class Logger {
       this.initFile(opts.file);
     }
     if (opts.toConsole) {
+      const pretty = pino.pretty();
       this.pt.pipe(pretty);
       pretty.pipe(process.stdout);
     }
@@ -109,10 +110,11 @@ class Logger {
   * @param {object} es - elasticsearch connection info
   */
   initTransport(es) {
-    this.esTransport = spawn(
-      'pino-elasticsearch',
-      es ? ['-H', es.host, '-p', es.port] : null
-    );
+    let args = es ? ['-H', es.host, '-p', es.port] : null;
+    if (es.index) {
+      args.push('-i', es.index);
+    }
+    this.esTransport = spawn('pino-elasticsearch', args);
     this.esTransport.on('close', code => {
       if (this.onShutdown) {
         this.onShutdown(code);
