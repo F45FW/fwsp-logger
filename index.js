@@ -4,6 +4,7 @@ const pino = require('pino');
 const spawn = require('child_process').spawn;
 const PassThrough = require('stream').PassThrough;
 const fs = require('fs');
+const _ = require('lodash');
 
 /** Provides logging via pino and transport to elasticsearch **/
 class Logger {
@@ -11,6 +12,8 @@ class Logger {
    * Create a logger
    * @param {object} opts - pino options
    * @param {string} [opts.name] - name for this logger
+   * @param {string} [opts.file] - log file path
+   * @param {boolean} [opts.toConsole] - log to console?
    * @param {object} es - elasticsearch connection info
    * @param {string} es.host - elasticsearch host
    * @param {number} es.port - elasticsearch port
@@ -20,13 +23,62 @@ class Logger {
     const pretty = pino.pretty();
     this.initTransport(es);
     this.pt.pipe(this.esTransport.stdin);
+    let pinoOpts = {
+      name: opts.name
+    };
     if (opts.file) {
       this.initFile(opts.file);
-      delete opts.file;
     }
-    this.pt.pipe(pretty);
-    pretty.pipe(process.stdout);
-    this.pino = pino(opts, this.pt);
+    if (opts.toConsole) {
+      this.pt.pipe(pretty);
+      pretty.pipe(process.stdout);
+    }
+    pinoOpts.serializers = this.serializers(opts.redact);
+    if (opts.express) {
+      this.middleware = require('express-pino-logger')(pinoOpts, this.pt);
+      this.pino = this.middleware.logger;
+    } else {
+      this.pino = pino(pinoOpts, this.pt);
+    }
+  }
+  /**
+   * @name serializers
+   * @summary Provides serializers for pino
+   * @param {array} redactFields - fields to redact
+   * @return {object} - req and res serializers
+   */
+  serializers(redactFields = []) {
+    let redacted = obj => {
+      let censored = _.clone(obj);
+      if (redactFields.length) {
+        redactFields.forEach(field => {
+          if (_.has(censored, field)) {
+            _.set(censored, field, '[redacted]');
+          }
+        });
+      }
+      return censored;
+    };
+    return {
+      req: (req) => {
+        return {
+          url: req.url,
+          originalUrl: req.originalUrl,
+          fullUrl: `${req.protocol}://${req.get('host')}${req.originalUrl}`,
+          method: req.method,
+          body: (req.method === 'post' || req.method === 'POST') ? redacted(req.body) : {},
+          xForwardedFor: req.headers['x-forwarded-for'],
+          host: req.headers['host'],
+          userAgent: req.headers['user-agent']
+        };
+      },
+      res: (res) => {
+        return {
+          statusCode: res.statusCode,
+          header: res._header
+        };
+      }
+    };
   }
   /**
    * @name initFile
@@ -86,19 +138,24 @@ class Logger {
 
 /**
  * @name initHydraExpress
+ * @summary Initializes logging for Hydra Express services
  * @param {object} hydraExpress - hydraExpress instance
  * @param {string} serviceName - the name of the service
  * @param {object} config - logger options
  * @param {object} config.elasticsearch - elasticsearch connection info
  * @param {string} config.elasticsearch.host - elasticsearch host
  * @param {number} config.elasticsearch.port - elasticsearch port
- * @param {boolean} [config.noFile] - don't log to disk if true
+ * @param {boolean} [config.toConsole=true] - log to console?
+ * @param {boolean} [config.noFile=false] - don't log to disk if true
+ * @param {array} [redact] - fields to redact with pino-noir
  * @param {string} [config.logPath] - override default log file
  * @param {string} [config.name]- name for this logger
+ * @return {object} Logger object
  */
 const initHydraExpress = (hydraExpress, serviceName, config) => {
   let opts = {
-    name: config.name || serviceName
+    name: config.name || serviceName,
+    toConsole: !(config.toConsole === false)
   };
   if (!config.noFile) {
     let logFilePath = '';
@@ -110,9 +167,13 @@ const initHydraExpress = (hydraExpress, serviceName, config) => {
     }
     opts.file = logFilePath;
   }
+  if (config.redact) {
+    opts.redact = config.redact;
+  }
+  opts.express = true;
   const logger = new Logger(opts, config.elasticsearch);
-  hydraExpress.logger = logger;
   hydraExpress.appLogger = logger.getLogger();
+  return logger;
 };
 
 module.exports = {
