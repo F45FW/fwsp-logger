@@ -9,13 +9,18 @@ First, run `npm install -g pino-elasticsearch`
 
 In [Hydra-Express](https://github.com/flywheelsports/fwsp-hydra-express) service entry-point script:
 ```javascript
+
+// set up the logger for hydra express
 let logger = config.logger && require('fwsp-logger').initHydraExpress(
   hydraExpress, config.hydra.serviceName, config.logger
 );
 return hydraExpress.init(config.getObject(), version, () => {
   const express = hydraExpress.getExpress();
-  let logRequests = config.environment === 'development' && config.logger.logRequests;
-  logger && logRequests && hydraExpress.getExpressApp().use(logger.middleware);
+
+  // register the logging middleware if this is a dev environment and logger.logRequests is true
+  let logRequests = config.environment === 'development' && logger && config.logger.logRequests;
+  logRequests && hydraExpress.getExpressApp().use(logger.middleware);
+
   hydraExpress.registerRoutes({
     '/v1/service': require('./routes/service-v1-routes')
   });
@@ -32,21 +37,85 @@ with corresponding entry in config.json:
   "redact": ["password"], // fields to redact when logging req.body
   "elasticsearch": {
     "host": "localhost",
-    "port": 9200
+    "port": 9200,
+    "index": "local-dev"
   }
 },
+```
+
+Or, in Hydra services:
+```javascript
+
+// set up logger
+let logger;
+if (config.logger) {
+  const Logger = require('fwsp-logger').Logger;
+  logger = new Logger(
+    {
+      name: config.hydra.serviceName,
+      toConsole: true
+    },
+    config.logger.elasticsearch
+  ).getLogger();
+}
+
+// initialize hydra
+hydra.init(config.hydra)
+  .then(() => {
+    return hydra.registerService();
+  })
+  .then(serviceInfo => {
+
+    // log hydra 'log' events
+    hydra.on('log', (entry) => {
+      let msg = Utils.safeJSONParse(entry);
+      if (msg) {
+        if (logger[msg.type]) {
+          logger[msg.type](msg.message);
+        } else {
+          logger.info(msg.type, msg.message);
+        }
+      }
+    });
+
+    // log service start
+    logger.info({
+      message: `Started ${config.hydra.serviceName} (v.${config.version})`
+      serviceInfo
+    });
+  })
+
+  // log hydra.init error
+  .catch(error => logger.error({
+    message: 'Error initializing Hydra',
+    error
+  });
+});
 ```
 
 General usage:
 ```javascript
 const Logger = require('fwsp-logger').Logger,
       logger = new Logger(
-        { name: 'myApp' },
-        { host: 'your.elasticsearch.host.com', port: 9200 }
+        {
+          name: 'my-service',             // required - name of the app writing logs
+          file: '/custom/log-file.log',   // optional, defaults to ${cwd()}/serviceName.log
+          toConsole: true                 // defaults to false
+        }, {
+          host: 'your.elasticsearch.host.com',
+          port: 9200,
+          index: 'local-dev'
+        }
     );
 const appLogger = logger.getLogger();
 appLogger.error('An error happened');
-appLogger.info('Something else happened');
+appLogger.info({
+    message: 'Something else happened',
+    details: {
+      foo: 'bar',
+      answer: 42
+    }
+});
 ```
 
 ## Testing
@@ -59,6 +128,15 @@ using the docker-compose.yml file in this repository.
 You will need [docker](https://www.docker.com/) and
 [docker-compose](https://docs.docker.com/compose/) installed,
 then in this project folder, launch `docker-compose up`.
+
+You'll need to set up an Elasticsearch index in Kibana
+before you'll be able to view logs, which should be the value of
+logger.elasticsearch.index ('local-dev' in above examples),
+or 'pino' by default.
+
+If you don't have any index patterns set up, Kibana won't let you
+proceed without adding one. Otherwise, to add additional indices,
+go to Settings -> Indices.
 
 ## License
 
