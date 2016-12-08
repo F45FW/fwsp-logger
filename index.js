@@ -115,6 +115,9 @@ class Logger {
       args.push('-i', es.index);
     }
     this.esTransport = spawn('pino-elasticsearch', args);
+    this.esTransport.on('error', err => {
+      throw new Error(`Failed to start pino-elasticsearch: ${err}`);
+    });
     this.esTransport.on('close', code => {
       if (this.onShutdown) {
         this.onShutdown(code);

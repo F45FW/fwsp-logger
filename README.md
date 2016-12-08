@@ -15,7 +15,6 @@ let logger = config.logger && require('fwsp-logger').initHydraExpress(
   hydraExpress, config.hydra.serviceName, config.logger
 );
 return hydraExpress.init(config.getObject(), version, () => {
-  const express = hydraExpress.getExpress();
 
   // register the logging middleware if this is a dev environment and logger.logRequests is true
   let logRequests = config.environment === 'development' && logger && config.logger.logRequests;
