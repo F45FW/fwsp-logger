@@ -1,4 +1,4 @@
-# Logger [![Build Status](https://travis-ci.org/flywheelsports/fwsp-logger.svg?branch=master)](https://travis-ci.org/flywheelsports/fwsp-logger)
+# Logger [![npm version](https://badge.fury.io/js/fwsp-logger.svg)](https://badge.fury.io/js/fwsp-logger) [![Build Status](https://travis-ci.org/flywheelsports/fwsp-logger.svg?branch=master)](https://travis-ci.org/flywheelsports/fwsp-logger)
 
 ## Synopsis
 
