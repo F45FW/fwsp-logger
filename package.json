@@ -20,11 +20,11 @@
   "license": "MIT",
   "repository": "flywheelsports/fwsp-logger",
   "dependencies": {
-    "chokidar": "^1.6.1",
-    "express-pino-logger": "^2.0.0",
-    "fwsp-hydra": "^0.11.4",
-    "fwsp-hydra-express": "^0.11.8",
-    "lodash": "^4.17.2",
+    "chokidar": "1.6.1",
+    "express-pino-logger": "2.0.0",
+    "fwsp-hydra": "0.12.0",
+    "fwsp-hydra-express": "0.12.0",
+    "lodash": "4.17.2",
     "pino": "^3.0.2"
   },
   "devDependencies": {
