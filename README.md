@@ -8,7 +8,7 @@ First, run `npm install -g pino-elasticsearch`
 
 Use HydraExpressLogger plugin for Hydra Express apps:
 ```javascript
-const HydraExpressLogger = require('fwsp-logger/plugin').HydraExpressLogger;
+const HydraExpressLogger = require('fwsp-logger').HydraExpressLogger;
 hydraExpress.use(new HydraExpressLogger());
 hydraExpress.init(...);
 ```
@@ -36,7 +36,7 @@ with corresponding entry in config.json hydra.plugins:
 
 Or, use HydraLogger plugin for Hydra services:
 ```javascript
-const HydraLogger = require('fwsp-logger/plugin').HydraLogger;
+const HydraLogger = require('fwsp-logger').HydraLogger;
 hydra.use(new HydraLogger());
 hydra.init(...);
 ```
