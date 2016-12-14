@@ -1,6 +1,6 @@
 {
   "name": "fwsp-logger",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "author": {
     "name": "Eric Adum",
     "email": "eric@flywheelsports.com"
@@ -22,6 +22,8 @@
   "dependencies": {
     "chokidar": "^1.6.1",
     "express-pino-logger": "^2.0.0",
+    "fwsp-hydra": "^0.11.4",
+    "fwsp-hydra-express": "^0.11.8",
     "lodash": "^4.17.2",
     "pino": "^3.0.2"
   },
