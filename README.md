@@ -1,5 +1,4 @@
-# Logger [![npm version](https://badge.fury.io/js/fwsp-logger.svg)](https://badge.fury.io/js/fwsp-logger) [![Build Status](https://travis-ci.org/flywheelsports/fwsp-logger.svg?branch=master)](https://travis-ci.org/flywheelsports/fwsp-logger)
-
+# Logger [![npm version](https://badge.fury.io/js/fwsp-logger.svg)](https://badge.fury.io/js/fwsp-logger)
 ## Synopsis
 
 Provides a [pino](https://github.com/pinojs/pino) logger
@@ -7,103 +6,54 @@ that ships its logs to Elasticsearch via [pino-elasticsearch](https://github.com
 
 First, run `npm install -g pino-elasticsearch`
 
-In [Hydra-Express](https://github.com/flywheelsports/fwsp-hydra-express) service entry-point script:
+Use HydraExpressLogger plugin for Hydra Express apps:
 ```javascript
-
-// set up the logger for hydra express
-let logger = config.logger && require('fwsp-logger').initHydraExpress(
-  hydraExpress, config.hydra.serviceName, config.logger
-);
-return hydraExpress.init(config.getObject(), version, () => {
-
-  // register the logging middleware if this is a dev environment and logger.logRequests is true
-  let logRequests = config.environment === 'development' && logger && config.logger.logRequests;
-  logRequests && hydraExpress.getExpressApp().use(logger.middleware);
-
-  hydraExpress.registerRoutes({
-    '/v1/service': require('./routes/service-v1-routes')
-  });
-})
+const HydraExpressLogger = require('fwsp-logger/plugin').HydraExpressLogger;
+hydraExpress.use(new HydraExpressLogger());
+hydraExpress.init(...);
 ```
-with corresponding entry in config.json:
+with corresponding entry in config.json hydra.plugins:
 ```json
-"logger": {
-  "name": "optional - will default to service name",
-  "logPath": "optional - will default to service/servicename.log",
-  "toConsole": false, // don't log to console
-  "noFile": true, // don't log to disk
-  "logRequests": true, // log all requests in development env
-  "redact": ["password"], // fields to redact when logging req.body
-  "elasticsearch": {
-    "host": "localhost",
-    "port": 9200,
-    "index": "local-dev"
+"hydra": {
+  "plugins": {
+    "logger": {
+      "serviceName": "optional - will default to hydra.serviceName",
+      "logPath": "optional - will default to service/servicename.log",
+      "toConsole": false, // don't log to console
+      "noFile": true, // don't log to disk
+      "logRequests": true, // log all requests in development env
+      "redact": ["password"], // fields to redact when logging req.body
+      "elasticsearch": {
+        "host": "localhost",
+        "port": 9200,
+        "index": "local-dev"
+      }
+    }
   }
-},
+}
+,
 ```
 
-Or, in Hydra services:
+Or, use HydraLogger plugin for Hydra services:
 ```javascript
-
-// set up logger
-let logger;
-if (config.logger) {
-  const Logger = require('fwsp-logger').Logger;
-  logger = new Logger(
-    {
-      name: config.hydra.serviceName,
-      toConsole: true
-    },
-    config.logger.elasticsearch
-  ).getLogger();
-}
-
-// initialize hydra
-hydra.init(config.hydra)
-  .then(() => {
-    return hydra.registerService();
-  })
-  .then(serviceInfo => {
-
-    // log hydra 'log' events
-    hydra.on('log', (entry) => {
-      let msg = Utils.safeJSONParse(entry);
-      if (msg) {
-        if (logger[msg.type]) {
-          logger[msg.type](msg.message);
-        } else {
-          logger.info(msg.type, msg.message);
-        }
-      }
-    });
-
-    // log service start
-    logger.info({
-      message: `Started ${config.hydra.serviceName} (v.${config.version})`
-      serviceInfo
-    });
-  })
-
-  // log hydra.init error
-  .catch(error => logger.error({
-    message: 'Error initializing Hydra',
-    error
-  });
-});
+const HydraLogger = require('fwsp-logger/plugin').HydraLogger;
+hydra.use(new HydraLogger());
+hydra.init(...);
 ```
 
 General usage:
 ```javascript
-const Logger = require('fwsp-logger').Logger,
-      logger = new Logger(
+const PinoLogger = require('fwsp-logger').PinoLogger,
+      logger = new PinoLogger(
         {
-          name: 'my-service',             // required - name of the app writing logs
-          file: '/custom/log-file.log',   // optional, defaults to ${cwd()}/serviceName.log
-          toConsole: true                 // defaults to false
-        }, {
-          host: 'your.elasticsearch.host.com',
-          port: 9200,
-          index: 'local-dev'
+          serviceName: 'my-service',       // required - name of the app writing logs
+          logPath: '/custom/log-file.log', // optional, defaults to ${cwd()}/serviceName.log
+          toConsole: true,                 // defaults to false
+          elasticsearch: {
+            host: 'your.elasticsearch.host.com',
+            port: 9200,
+            index: 'local-dev'
+          }
         }
     );
 const appLogger = logger.getLogger();
