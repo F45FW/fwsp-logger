@@ -22,15 +22,16 @@
   "dependencies": {
     "chokidar": "1.6.1",
     "express-pino-logger": "2.0.0",
-    "hydra": "1.0.5",
-    "hydra-express": "1.0.8",
+    "hydra": "1.2.7",
+    "hydra-express": "1.2.7",
     "lodash": "4.17.4",
-    "pino": "4.0.3"
+    "pino": "4.3.0",
+    "cross-spawn": "5.1.0"
   },
   "devDependencies": {
     "chai": "3.5.0",
-    "eslint": "3.17.1",
-    "mocha": "3.2.0"
+    "eslint": "3.19.0",
+    "mocha": "3.3.0"
   },
   "bin": {
     "fwsp-logger": "index.js"
