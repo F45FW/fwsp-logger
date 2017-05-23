@@ -3,7 +3,7 @@
 ## Summary
 
 Provides a [pino](https://github.com/pinojs/pino) logger
-that ships its logs to Elasticsearch via [pino-elasticsearch](https://github.com/pinojs/pino-elasticsearch).
+that ships its logs to elasticsearch via [pino-elasticsearch](https://github.com/pinojs/pino-elasticsearch).
 
 ## Usage
 
@@ -20,8 +20,8 @@ hydraExpress.appLogger.info('information', {and: 'an object', with: 'some stuff'
 hydraExpress.appLogger.error({err: new Error('this will log a stack trace')});
 
 // in a request handler
-req.info('this will also log information about the current request');
-req.error({err: new Error('this will log a stack trace')});
+req.log.info('this will also log information about the current request');
+req.log.error({err: new Error('this will log a stack trace')});
 
 ```
 with corresponding entry in config.json:
