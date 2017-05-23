@@ -1,28 +1,37 @@
 # Logger [![npm version](https://badge.fury.io/js/fwsp-logger.svg)](https://badge.fury.io/js/fwsp-logger)
-## Synopsis
+
+## Summary
 
 Provides a [pino](https://github.com/pinojs/pino) logger
 that ships its logs to Elasticsearch via [pino-elasticsearch](https://github.com/pinojs/pino-elasticsearch).
 
-First, run `npm install -g pino-elasticsearch`
+## Usage
 
-Use HydraExpressLogger plugin for Hydra Express apps:
+Run `npm install -g pino-elasticsearch` to install the elasticsearch transport module.
+
+See [Configuration](https://github.com/flywheelsports/fwsp-logger#configuration) for details on the logger plugin config options.
+
+Use the `HydraExpressLogger` plugin for Hydra Express apps:
 ```javascript
 const HydraExpressLogger = require('fwsp-logger').HydraExpressLogger;
 hydraExpress.use(new HydraExpressLogger());
 hydraExpress.init(...);
+hydraExpress.appLogger.info('information', {and: 'an object', with: 'some stuff'});
+hydraExpress.appLogger.error({err: new Error('this will log a stack trace')});
+
+// in a request handler
+req.info('this will also log information about the current request');
+req.error({err: new Error('this will log a stack trace')});
+
 ```
-with corresponding entry in config.json hydra.plugins:
+with corresponding entry in config.json:
 ```json
 "hydra": {
   "plugins": {
     "logger": {
-      "serviceName": "optional - will default to hydra.serviceName",
-      "logPath": "optional - will default to service/servicename.log",
-      "toConsole": false, // don't log to console
-      "noFile": true, // don't log to disk
-      "logRequests": true, // log all requests in development env
-      "redact": ["password"], // fields to redact when logging req.body
+      "serviceName": "foo-service",
+      "toConsole": false,
+      "noFile": true,
       "elasticsearch": {
         "host": "localhost",
         "port": 9200,
@@ -31,24 +40,27 @@ with corresponding entry in config.json hydra.plugins:
     }
   }
 }
-,
 ```
 
-Or, use HydraLogger plugin for Hydra services:
+Or, use the `HydraLogger` plugin for Hydra services:
 ```javascript
 const HydraLogger = require('fwsp-logger').HydraLogger;
-hydra.use(new HydraLogger());
+let hydraLogger = new HydraLogger();
+let log = hydraLogger.getLogger();
+hydra.use(hydraLogger);
 hydra.init(...);
+log.info('some info');
+log.error({err: new Error('error with stack trace')});
+log.error('just a message, no stack trace');
 ```
 
-General usage:
+General usage (outside of Hydra):
 ```javascript
 const PinoLogger = require('fwsp-logger').PinoLogger,
       logger = new PinoLogger(
         {
-          serviceName: 'my-service',       // required - name of the app writing logs
-          logPath: '/custom/log-file.log', // optional, defaults to ${cwd()}/serviceName.log
-          toConsole: true,                 // defaults to false
+          serviceName: 'my-app',             /* required - name of the app writing logs */
+          logPath: '/custom/log-file.log',   /* optional, defaults to ${cwd()}/serviceName.log */
           elasticsearch: {
             host: 'your.elasticsearch.host.com',
             port: 9200,
@@ -57,7 +69,7 @@ const PinoLogger = require('fwsp-logger').PinoLogger,
         }
     );
 const appLogger = logger.getLogger();
-appLogger.error('An error happened');
+appLogger.error({err: 'An error happened'}); // pass {err} literal for proper error serialization
 appLogger.info({
     message: 'Something else happened',
     details: {
@@ -66,6 +78,17 @@ appLogger.info({
     }
 });
 ```
+
+## Configuration
+
+| Field | Description | Required | Default
+| --- | --- | ---| ---
+| serviceName | Name of the service doing the logging | N | `hydra.serviceName`
+| logPath | Path to log to if !noFile | N | `service/servicename.log`
+| toConsole | Log to console (stdout)? | N | `true`
+| noFile | Don't write log to disk | N | `false`
+| redact | Fields to redact (e.g. passwords, credit card numbers, etc.) | N | `[]`
+| elasticsearch | Connection object for ElasticSearch | N | *none*
 
 ## Testing
 
@@ -80,8 +103,8 @@ then in this project folder, launch `docker-compose up`.
 
 You'll need to set up an Elasticsearch index in Kibana
 before you'll be able to view logs, which should be the value of
-logger.elasticsearch.index ('local-dev' in above examples),
-or 'pino' by default.
+`logger.elasticsearch.index` (`local-dev` in above examples),
+or `pino` by default.
 
 If you don't have any index patterns set up, Kibana won't let you
 proceed without adding one. Otherwise, to add additional indices,
