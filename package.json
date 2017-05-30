@@ -25,13 +25,13 @@
     "hydra-express-plugin": "0.0.1",
     "hydra-plugin": "0.0.1",
     "lodash": "4.17.4",
-    "pino": "4.5.2",
+    "pino": "4.5.3",
     "pino-http": "2.6.1"
   },
   "devDependencies": {
-    "chai": "3.5.0",
+    "chai": "4.0.0",
     "eslint": "3.19.0",
-    "mocha": "3.3.0"
+    "mocha": "3.4.2"
   },
   "bin": {
     "fwsp-logger": "index.js"
