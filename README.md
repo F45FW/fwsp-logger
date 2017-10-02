@@ -91,7 +91,7 @@ appLogger.info({
 | noFile | Don't write log to disk | N | `false`
 | redact | Fields to redact (e.g. passwords, credit card numbers, etc.) | N | `[]`
 | elasticsearch | Connection object for ElasticSearch | N | *none*
-| rotate | How often to rotate ES index `[daily|monthly|yearly]` | N | No rotation by default
+| rotate | How often to rotate ES index `[daily\|monthly\|yearly]` | N | No rotation by default
 
 ## Testing
 
