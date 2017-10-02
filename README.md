@@ -7,8 +7,6 @@ that ships its logs to elasticsearch via [pino-elasticsearch](https://github.com
 
 ## Usage
 
-Run `npm install -g pino-elasticsearch` to install the elasticsearch transport module.
-
 See [Configuration](https://github.com/flywheelsports/fwsp-logger#configuration) for details on the logger plugin config options.
 
 Use the `HydraExpressLogger` plugin for Hydra Express apps:
@@ -49,6 +47,10 @@ let hydraLogger = new HydraLogger();
 let log = hydraLogger.getLogger();
 hydra.use(hydraLogger);
 hydra.init(...);
+// use via hydra (recommended)
+hydra.log('info', 'some info');
+hydra.log('error', 'just a message, no stack trace');
+// or use directly - useful if you need a stack trace
 log.info('some info');
 log.error({err: new Error('error with stack trace')});
 log.error('just a message, no stack trace');
