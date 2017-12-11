@@ -165,7 +165,7 @@ function count(range) {
 
 function countNew(start) {
   return client.count({
-    index: `hydra.${start}`,
+    index: `${baseIndex}.${start}`,
     type: 'log'
   });
 }
@@ -174,7 +174,7 @@ function reindex(start, end) {
   return client.reindex({
     body: {
       source: {
-        index: 'hydra',
+        index: baseIndex,
         type: 'log',
         query: {
           range: {
@@ -187,7 +187,7 @@ function reindex(start, end) {
         }
       },
       dest: {
-        index: `hydra.${start}`
+        index: `${baseIndex}.${start}`
       }
     }
   });
