@@ -7,8 +7,9 @@ const dump = obj => console.dir(obj, {colors: true, depth: null});
 const baseIndex = 'hydra';
 
 getExpiredIndices()
-.then(deleteIndices)
-.then(dump).catch(dump);
+  .then(deleteIndices)
+  .then(dump).catch(dump)
+  .then(() => process.exit(0));
 
 //Promise.mapSeries(getDays('2017-07-30', '2017-08-01'), doReindex).then(() => console.log('Done with all days'));
 

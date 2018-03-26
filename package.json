@@ -1,6 +1,6 @@
 {
   "name": "fwsp-logger",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "author": {
     "name": "Eric Adum",
     "email": "eric@flywheelsports.com"
@@ -20,16 +20,16 @@
   "license": "MIT",
   "repository": "flywheelsports/fwsp-logger",
   "dependencies": {
-    "chokidar": "2.0.2",
-    "elasticsearch": "14.1.0",
+    "chokidar": "2.0.3",
+    "elasticsearch": "14.2.1",
     "fast-json-parse": "1.0.3",
     "hydra-express-plugin": "0.0.1",
     "hydra-plugin": "0.0.1",
     "lodash": "4.17.5",
     "minimist": "1.2.0",
     "path": "0.12.7",
-    "pino": "4.13.0",
-    "pino-http": "3.2.0",
+    "pino": "4.15.0",
+    "pino-http": "^3.2.1",
     "split2": "2.2.0"
   },
   "devDependencies": {
