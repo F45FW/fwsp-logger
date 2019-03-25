@@ -20,22 +20,21 @@
   "license": "MIT",
   "repository": "flywheelsports/fwsp-logger",
   "dependencies": {
-    "chokidar": "2.0.4",
-    "elasticsearch": "15.1.1",
+    "chokidar": "2.1.2",
+    "elasticsearch": "15.4.1",
     "fast-json-parse": "1.0.3",
     "hydra-express-plugin": "0.0.1",
     "hydra-plugin": "0.0.1",
     "lodash": "4.17.11",
     "minimist": "1.2.0",
-    "path": "0.12.7",
-    "pino": "4.16.1",
-    "pino-http": "^3.2.1",
-    "split2": "2.2.0"
+    "pino": "^4.15.1",
+    "pino-http": "^3.2.0",
+    "split2": "3.1.0"
   },
   "devDependencies": {
-    "chai": "4.1.2",
-    "eslint": "4.19.1",
-    "mocha": "5.1.0"
+    "chai": "4.2.0",
+    "eslint": "5.15.1",
+    "mocha": "6.0.2"
   },
   "bin": {
     "fwsp-logger": "index.js"
