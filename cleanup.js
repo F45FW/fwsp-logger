@@ -68,8 +68,8 @@ function deleteIndices(indices) {
     });
   })
     .tap(() => {
-      const elapsed = Math.round((new Date().getTime() - start) / 1000);
-      console.log(`Done after ${elapsed} seconds`);
+      const elapsed = (new Date().getTime() - start);
+      console.log(`Done after ${elapsed} ms`);
     });
 }
 
