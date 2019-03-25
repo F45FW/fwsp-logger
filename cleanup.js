@@ -10,13 +10,10 @@ const chunk = require('lodash/chunk');
 
 getExpiredIndices()
   .then(expired => {
-    const first = expired.shift();
-    const last = expired.pop();
-    console.log({first, last});
-  });
-
-    /*
     console.log(`Deleting ${expired.length} expired indices...`);
+    const first = expired[0];
+    const [last] = expired.slice(-1);
+    console.log({first, last});
     const failures = new Set(expired);
     let acknowledged = 0;
     return Promise.each(
@@ -36,8 +33,8 @@ getExpiredIndices()
     console.log(`${acknowledged} deletions acknowledged, ${failures.size} failed`);
   })
   // .then(dump).catch(dump)
-  .catch(process.error)
-  .then(() => process.exit(0));*/
+  .catch(process.error);
+// .then(() => process.exit(0));
 
 //Promise.mapSeries(getDays('2017-07-30', '2017-08-01'), doReindex).then(() => console.log('Done with all days'));
 
@@ -66,7 +63,9 @@ function deleteIndices(indices) {
   const start = new Date().getTime();
   return Promise.mapSeries(indices, index => {
     console.log(`Deleting ${index}`);
-    return client.indices.delete({index});
+    return new Promise(resolve => {
+      client.indices.delete({index}, resolve);
+    });
   })
     .tap(() => {
       const elapsed = Math.round((new Date().getTime() - start) / 1000);
@@ -101,28 +100,33 @@ function getExpiredIndices() {
     .then(result => {
       result.forEach(index => {
         const [service, date] = index.index.split('.');
+        if (!date || !/^\d\d\d\d-\d\d-\d\d$/.test(date)) {
+          return;
+        }
         if (moment(date).isBefore(limit)) {
           expired.push({service, date});
           dates.add(date);
         }
       });
-      return Array.from(dates.values()).sort(
-        (a, b) => moment(a) - moment(b)
-      );//expired.sort().map(({service, date}) => `${service}.${date}`);
+      return expired.sort(
+        (a, b) => moment(a.date) - moment(b.date)
+      ).map(
+        ({service, date}) => `${service}.${date}`
+      );
     });
 }
 
 function getNewCounts() {
   let counts = {};
   return client.cat.indices({format: 'json'})
-      .then(result => {
-        result.forEach(index => {
-          if (index.index.startsWith(`${baseIndex}.`)) {
-            counts[index.index.split('.').pop()] = parseInt(index['docs.count']);
-          }
-        });
-        return counts;
+    .then(result => {
+      result.forEach(index => {
+        if (index.index.startsWith(`${baseIndex}.`)) {
+          counts[index.index.split('.').pop()] = parseInt(index['docs.count']);
+        }
       });
+      return counts;
+    });
 }
 
 function countLogs(start, end) {
