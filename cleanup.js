@@ -3,13 +3,41 @@ const Promise = require('bluebird');
 const ElasticSearch = require('elasticsearch');
 const client = new ElasticSearch.Client({host: process.argv[2]});
 const dump = obj => console.dir(obj, {colors: true, depth: null});
+const chunk = require('lodash/chunk');
 
-const baseIndex = 'hydra';
+//client.indices.delete({index: `*.${process.argv[3]}-*`}).then(result => console.log(result));
+
 
 getExpiredIndices()
-  .then(deleteIndices)
-  .then(dump).catch(dump)
-  .then(() => process.exit(0));
+  .then(expired => {
+    const first = expired.shift();
+    const last = expired.pop();
+    console.log({first, last});
+  });
+
+    /*
+    console.log(`Deleting ${expired.length} expired indices...`);
+    const failures = new Set(expired);
+    let acknowledged = 0;
+    return Promise.each(
+      chunk(expired, 1),
+      batch => deleteIndices(batch).then(results => {
+        dump(results);
+        results.forEach((result, i) => {
+          if (result && result.acknowledged) {
+            failures.delete(batch[i]);
+            acknowledged++;
+          }
+        });
+      }).then(() => ({failures, acknowledged}))
+    );
+  })
+  .then(({failures, acknowledged}) => {
+    console.log(`${acknowledged} deletions acknowledged, ${failures.size} failed`);
+  })
+  // .then(dump).catch(dump)
+  .catch(process.error)
+  .then(() => process.exit(0));*/
 
 //Promise.mapSeries(getDays('2017-07-30', '2017-08-01'), doReindex).then(() => console.log('Done with all days'));
 
@@ -35,7 +63,15 @@ function getDays(start, end = moment().startOf('day')) {
 
 function deleteIndices(indices) {
   console.log('Deleting indices: ' + indices.join(', '));
-  return Promise.mapSeries(indices, index => client.indices.delete({index}));
+  const start = new Date().getTime();
+  return Promise.mapSeries(indices, index => {
+    console.log(`Deleting ${index}`);
+    return client.indices.delete({index});
+  })
+    .tap(() => {
+      const elapsed = Math.round((new Date().getTime() - start) / 1000);
+      console.log(`Done after ${elapsed} seconds`);
+    });
 }
 
 function diffCounts(start, end) {
@@ -60,18 +96,20 @@ function diffCounts(start, end) {
 function getExpiredIndices() {
   let limit = moment().startOf('day').subtract('3', 'w');
   let expired = [];
+  const dates = new Set();
   return client.cat.indices({format: 'json'})
-      .then(result => {
-        result.forEach(index => {
-          if (index.index.startsWith(`${baseIndex}.`)) {
-            let date = index.index.split('.').pop();
-            if (moment(date).isBefore(limit)) {
-              expired.push(date);
-            }
-          }
-        });
-        return expired.sort().map(x => `${baseIndex}.${x}`);
+    .then(result => {
+      result.forEach(index => {
+        const [service, date] = index.index.split('.');
+        if (moment(date).isBefore(limit)) {
+          expired.push({service, date});
+          dates.add(date);
+        }
       });
+      return Array.from(dates.values()).sort(
+        (a, b) => moment(a) - moment(b)
+      );//expired.sort().map(({service, date}) => `${service}.${date}`);
+    });
 }
 
 function getNewCounts() {
