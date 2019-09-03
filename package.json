@@ -1,6 +1,6 @@
 {
   "name": "fwsp-logger",
-  "version": "0.3.5",
+  "version": "0.4.0",
   "author": {
     "name": "Eric Adum",
     "email": "eric@flywheelsports.com"
@@ -23,6 +23,7 @@
     "chokidar": "2.1.2",
     "elasticsearch": "16.3.0",
     "fast-json-parse": "1.0.3",
+    "flatted": "^2.0.1",
     "hydra-express-plugin": "0.0.1",
     "hydra-plugin": "0.0.1",
     "lodash": "4.17.15",
